@@ -27,6 +27,13 @@ export default function App() {
     setNotes(notes.filter(n => n._id !== id));
   };
 
+  const [search, setSearch] = useState("");
+
+const filteredNotes = notes.filter(note =>
+  note.title.toLowerCase().includes(search.toLowerCase()) ||
+  note.content.toLowerCase().includes(search.toLowerCase())
+);
+
   return (
     <div className="min-h-screen bg-gray-100 p-8 dark:bg-gray-900 dark:text-white transition-all">
       <h1 className="text-3xl font-bold mb-4 text-center">📝 Personal Notes</h1>
@@ -40,6 +47,16 @@ export default function App() {
         onDelete={deleteNote} 
         onEdit={setEditingNote}
       />
+
+          <div className="mb-4 text-center">
+      <input
+        type="text"
+        placeholder="Search notes..."
+        className="border p-2 rounded w-1/2 dark:bg-gray-800 dark:border-gray-700"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+    </div>
     </div>
   );
 }
