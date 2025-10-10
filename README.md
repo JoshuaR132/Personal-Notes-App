@@ -80,26 +80,6 @@ npm start
 
 The frontend will run on `http://localhost:3000` and communicate with the backend API.
 
-## Folder Structure
-Personal-Notes-App/
-├── backend/
-│   ├── models/
-│   │   └── Note.js
-│   ├── routes/
-│   │   └── notes.js
-│   ├── server.js
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── NoteForm.jsx
-│   │   │   └── NoteList.jsx
-│   │   ├── App.jsx
-│   │   ├── api.js
-│   │   └── index.js
-│   └── package.json
-└── README.md
-
 ## Usage
 
 * Add a new note using the form.
