@@ -1,7 +1,8 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
+  darkMode: 'class', // ← THIS IS ESSENTIAL
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}", // Tell Tailwind to scan all files in /src
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {},
