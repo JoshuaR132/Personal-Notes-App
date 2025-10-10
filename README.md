@@ -1,8 +1,3 @@
-Absolutely! Here’s a professional, clear, and portfolio-ready README for your **Personal Notes App**. I’ve written it in a way that highlights your full-stack skills and explains how to run and use the app. You can copy this directly into a `README.md` file in your GitHub repo.
-
----
-
-markdown
 # 📝 Personal Notes App
 
 A full-stack web application to create, view, update, and delete personal notes. Built with **React**, **Tailwind CSS**, **Node.js**, **Express**, and **MongoDB**. This project demonstrates a complete full-stack workflow, including frontend/backend integration, REST API design, and deployment readiness.
