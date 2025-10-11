@@ -1,63 +1,68 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import { body, validationResult } from "express-validator";
 import User from "../models/User.js";
 
 const router = express.Router();
 
-// Register
-router.post(
-  "/register",
-  body("username").notEmpty().withMessage("Username is required"),
-  body("email").isEmail().withMessage("Valid email is required"),
-  body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
+// POST /auth/register
+router.post("/register", async (req, res) => {
+  try {
     const { username, email, password } = req.body;
 
-    try {
-      let user = await User.findOne({ email });
-      if (user) return res.status(400).json({ message: "Email already in use" });
-
-      user = new User({ username, email, password });
-      await user.save();
-
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
-
-      res.json({ token, user: { id: user._id, username, email } });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Please provide all fields." });
     }
+
+    const emailLower = email.toLowerCase();
+
+    // Check if email already exists
+    const existing = await User.findOne({ email: emailLower });
+    if (existing) return res.status(400).json({ message: "Email already registered." });
+
+    // Store plain password; pre-save hook in User.js will hash it
+    const user = new User({ username, email: emailLower, password });
+    await user.save();
+
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    res.json({
+      token,
+      user: { id: user._id, username: user.username, email: user.email },
+    });
+  } catch (err) {
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Server error" });
   }
-);
+});
 
-// Login
-router.post(
-  "/login",
-  body("email").isEmail().withMessage("Valid email required"),
-  body("password").notEmpty().withMessage("Password required"),
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
+// POST /auth/login
+router.post("/login", async (req, res) => {
+  try {
     const { email, password } = req.body;
 
-    try {
-      const user = await User.findOne({ email });
-      if (!user) return res.status(401).json({ message: "Invalid credentials" });
-
-      const isMatch = await user.comparePassword(password);
-      if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
-
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
-
-      res.json({ token, user: { id: user._id, username: user.username, email } });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please provide email and password." });
     }
+
+    const emailLower = email.toLowerCase();
+    const user = await User.findOne({ email: emailLower });
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+
+    // Compare password using schema method
+    const match = await user.comparePassword(password);
+    if (!match) return res.status(400).json({ message: "Invalid credentials" });
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    res.json({
+      token,
+      user: { id: user._id, username: user.username, email: user.email },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error" });
   }
-);
+});
 
 export default router;
