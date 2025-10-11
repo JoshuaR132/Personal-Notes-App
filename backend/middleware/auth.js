@@ -50,6 +50,18 @@ router.post("/login", loginValidator, async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
+
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+  if (!token) return res.status(401).json({ message: "No token, authorization denied" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded.id;
+    next();
+  } catch (err) {
+    res.status(401).json({ message: "Token invalid or expired" });
+  }
+
 });
 
 export default router;
