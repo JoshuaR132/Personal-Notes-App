@@ -85,7 +85,7 @@ The frontend will run on `http://localhost:3000` and communicate with the backen
 * Add a new note using the form.
 * View all saved notes in a responsive grid.
 * Delete notes with a single click.
-* (Optional) Extend the app with features like editing, search, or tagging.
+* Edit, or search.
 
 ## Security & Best Practices
 
@@ -104,5 +104,3 @@ The frontend will run on `http://localhost:3000` and communicate with the backen
 ## Contributing
 
 Contributions are welcome! Feel free to open an issue or submit a pull request for improvements.
-
-## Contact
