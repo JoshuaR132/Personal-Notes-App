@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "./api";
 import NoteForm from "./components/NoteForm";
 import NoteList from "./components/NoteList";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   const [notes, setNotes] = useState([]);
@@ -91,37 +92,46 @@ export default function App() {
     }
   };
 
-  // 🚪 Logout
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+// 🚪 Logout function
+const logout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  
+  // Only redirect if not already on /login
+  if (window.location.pathname !== "/login") {
     window.location.href = "/login";
-  };
+  }
+};
 
-  // 🧭 Render
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white transition-all duration-300 p-8">
+      {/* Toaster for toast notifications */}
+      <Toaster position="top-right" />
+
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-center w-full">
+      <div className="flex justify-between items-center mb-6 relative">
+        <h1 className="text-3xl font-bold text-center flex-1">
           📝 Personal Notes
         </h1>
 
-        {/* 🌙 Dark Mode Toggle */}
-        <button
-          onClick={toggleDarkMode}
-          className="absolute top-6 right-8 px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm hover:scale-105 transition-transform"
-        >
-          {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-        </button>
+        <div className="flex gap-4 absolute right-0">
+          {/* 🌙 Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm hover:scale-105 transition-transform"
+          >
+            {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+          </button>
 
-        {/* 🚪 Logout */}
-        <button
-          onClick={logout}
-          className="absolute top-6 right-36 px-3 py-2 bg-red-500 text-white rounded text-sm hover:scale-105 transition-transform"
-        >
-          Logout
-        </button>
+          {/* 🚪 Logout */}
+          <button
+            onClick={logout}
+            className="px-3 py-2 bg-red-500 text-white rounded text-sm hover:scale-105 transition-transform"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* 🔍 Search bar */}
@@ -129,7 +139,7 @@ export default function App() {
         <input
           type="text"
           placeholder="Search notes..."
-          className="border p-2 rounded w-1/2 dark:bg-gray-800 dark:border-gray-700"
+          className="border p-2 rounded w-full md:w-1/2 dark:bg-gray-800 dark:border-gray-700"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -157,7 +167,9 @@ export default function App() {
         />
       ) : (
         !loading && (
-          <p className="text-center text-gray-500 mt-6">No notes yet.</p>
+          <p className="text-center text-gray-500 mt-6">
+            No notes found. Create your first note!
+          </p>
         )
       )}
     </div>
