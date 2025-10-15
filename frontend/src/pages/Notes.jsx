@@ -1,71 +1,97 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../api";
 import NoteForm from "../components/NoteForm";
 import NoteList from "../components/NoteList";
 import { useNavigate } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 
-export default function Notes() {
-  const navigate = useNavigate();
-  const [notes, setNotes] = useState([]);
-  const [editingNote, setEditingNote] = useState(null);
-  const [search, setSearch] = useState("");
+function useDarkMode() {
   const [darkMode, setDarkMode] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
       document.documentElement.classList.add("dark");
       setDarkMode(true);
     }
   }, []);
 
+  const toggle = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    document.documentElement.classList.toggle("dark", newMode);
+    localStorage.setItem("theme", newMode ? "dark" : "light");
+  };
+
+  return [darkMode, toggle];
+}
+
+export default function Notes() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const res = await api.get("/notes");
-        setNotes(res.data);
-      } catch (err) {
-        console.error("Failed to fetch notes:", err);
-        setError("Could not load notes. Please check your connection.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNotes();
+    if (!token) navigate("/login");
+  }, [token, navigate]);
+
+  const [notes, setNotes] = useState([]);
+  const [editingNote, setEditingNote] = useState(null);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [darkMode, toggleDarkMode] = useDarkMode();
+
+  const handleApi = useCallback(async (apiCall, onSuccess, errorMsg) => {
+    try {
+      const res = await apiCall();
+      onSuccess(res.data);
+    } catch (err) {
+      console.error(err);
+      setError(errorMsg || "Something went wrong.");
+      toast.error(errorMsg || "Something went wrong.");
+    }
   }, []);
 
+  useEffect(() => {
+    handleApi(
+      () => api.get("/notes"),
+      (data) => setNotes(data),
+      "Failed to load notes."
+    ).finally(() => setLoading(false));
+  }, [handleApi]);
+
   const addNote = async (note) => {
-    try {
-      const res = await api.post("/notes", note);
-      setNotes([...notes, res.data]);
-    } catch (err) {
-      console.error("Error adding note:", err);
-      alert("Failed to add note.");
-    }
+    handleApi(
+      () => api.post("/notes", note),
+      (newNote) => {
+        setNotes([...notes, newNote]);
+        toast.success("Note added!");
+      },
+      "Failed to add note."
+    );
   };
 
   const updateNote = async (note) => {
-    try {
-      const res = await api.put(`/notes/${note._id}`, note);
-      setNotes(notes.map((n) => (n._id === note._id ? res.data : n)));
-      setEditingNote(null);
-    } catch (err) {
-      console.error("Error updating note:", err);
-      alert("Failed to update note.");
-    }
+    handleApi(
+      () => api.put(`/notes/${note._id}`, note),
+      (updatedNote) => {
+        setNotes(notes.map((n) => (n._id === updatedNote._id ? updatedNote : n)));
+        setEditingNote(null);
+        toast.success("Note updated!");
+      },
+      "Failed to update note."
+    );
   };
 
   const deleteNote = async (id) => {
-    try {
-      await api.delete(`/notes/${id}`);
-      setNotes(notes.filter((n) => n._id !== id));
-    } catch (err) {
-      console.error("Error deleting note:", err);
-      alert("Failed to delete note.");
-    }
+    handleApi(
+      () => api.delete(`/notes/${id}`),
+      () => {
+        setNotes(notes.filter((n) => n._id !== id));
+        toast.success("Note deleted!");
+      },
+      "Failed to delete note."
+    );
   };
 
   const filteredNotes = notes.filter(
@@ -73,19 +99,6 @@ export default function Notes() {
       note.title.toLowerCase().includes(search.toLowerCase()) ||
       note.content.toLowerCase().includes(search.toLowerCase())
   );
-
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-
-    if (newMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -99,7 +112,6 @@ export default function Notes() {
 
       <div className="flex justify-between items-center mb-6 relative">
         <h1 className="text-3xl font-bold text-center flex-1">📝 Personal Notes</h1>
-
         <div className="flex gap-4 absolute right-0">
           <button
             onClick={toggleDarkMode}
@@ -126,17 +138,20 @@ export default function Notes() {
         />
       </div>
 
-      {loading && <p className="text-center">Loading notes...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
-
-      {!loading && (
-        <NoteForm onAdd={addNote} onUpdate={updateNote} editingNote={editingNote} />
-      )}
-
-      {!loading && filteredNotes.length > 0 ? (
-        <NoteList notes={filteredNotes} onDelete={deleteNote} onEdit={setEditingNote} />
+      {loading ? (
+        <p className="text-center">Loading notes...</p>
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p>
       ) : (
-        !loading && <p className="text-center text-gray-500 mt-6">No notes yet.</p>
+        <>
+          <NoteForm onAdd={addNote} onUpdate={updateNote} editingNote={editingNote} />
+
+          {filteredNotes.length > 0 ? (
+            <NoteList notes={filteredNotes} onDelete={deleteNote} onEdit={setEditingNote} />
+          ) : (
+            <p className="text-center text-gray-500 mt-6">No notes yet.</p>
+          )}
+        </>
       )}
     </div>
   );
