@@ -10,7 +10,6 @@ import notesRouter from "./routes/notes.js";
 dotenv.config();
 const app = express();
 
-// Middlewares
 app.use(helmet());
 app.use(express.json());
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
@@ -18,11 +17,9 @@ app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 100 });
 app.use(limiter);
 
-// Routes
 app.use("/api/auth", authRouter);
 app.use("/api/notes", notesRouter);
 
-// Connect DB & start server
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB error:", err.message));

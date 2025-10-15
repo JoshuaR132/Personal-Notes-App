@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 export default function NoteForm({ onAdd, onUpdate, editingNote }) {
   const [note, setNote] = useState({ title: "", content: "", tags: "" });
 
-  // 📝 Pre-fill form when editing
   useEffect(() => {
     if (editingNote) {
       setNote({
@@ -21,7 +20,6 @@ export default function NoteForm({ onAdd, onUpdate, editingNote }) {
     e.preventDefault();
     if (!note.title || !note.content) return;
 
-    // 🔹 Format tags as array
     const formattedNote = {
       ...note,
       tags: note.tags

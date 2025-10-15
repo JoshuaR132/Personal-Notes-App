@@ -5,10 +5,8 @@ import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Protect all /notes routes
 router.use(authMiddleware);
 
-// GET /notes?search=xxx&tags=tag1,tag2
 router.get("/", async (req, res) => {
   const { search, tags } = req.query;
   let filter = { owner: req.userId };
@@ -32,7 +30,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST /notes
 router.post(
   "/",
   body("title").notEmpty(),
@@ -51,7 +48,6 @@ router.post(
   }
 );
 
-// PUT /notes/:id
 router.put("/:id", async (req, res) => {
   try {
     const note = await Note.findOneAndUpdate(
@@ -66,7 +62,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE /notes/:id
 router.delete("/:id", async (req, res) => {
   try {
     const note = await Note.findOneAndDelete({ _id: req.params.id, owner: req.userId });

@@ -16,7 +16,7 @@ export default function Login() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       toast.success("Logged in successfully!");
-      navigate("/notes"); // 👈 redirect here
+      navigate("/notes"); 
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.message || "Login failed.";

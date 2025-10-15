@@ -14,7 +14,6 @@ export default function Notes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🌗 Load theme preference
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
@@ -23,7 +22,6 @@ export default function Notes() {
     }
   }, []);
 
-  // 📝 Fetch notes
   useEffect(() => {
     const fetchNotes = async () => {
       try {
@@ -39,7 +37,6 @@ export default function Notes() {
     fetchNotes();
   }, []);
 
-  // ➕ Add note
   const addNote = async (note) => {
     try {
       const res = await api.post("/notes", note);
@@ -50,7 +47,6 @@ export default function Notes() {
     }
   };
 
-  // ✏️ Update note
   const updateNote = async (note) => {
     try {
       const res = await api.put(`/notes/${note._id}`, note);
@@ -62,7 +58,6 @@ export default function Notes() {
     }
   };
 
-  // ❌ Delete note
   const deleteNote = async (id) => {
     try {
       await api.delete(`/notes/${id}`);
@@ -73,14 +68,12 @@ export default function Notes() {
     }
   };
 
-  // 🔍 Filtered notes
   const filteredNotes = notes.filter(
     (note) =>
       note.title.toLowerCase().includes(search.toLowerCase()) ||
       note.content.toLowerCase().includes(search.toLowerCase())
   );
 
-  // 🌗 Toggle dark mode
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
@@ -94,7 +87,6 @@ export default function Notes() {
     }
   };
 
-  // 🚪 Logout
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -105,7 +97,6 @@ export default function Notes() {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white transition-all duration-300 p-8">
       <Toaster position="top-right" />
 
-      {/* Header */}
       <div className="flex justify-between items-center mb-6 relative">
         <h1 className="text-3xl font-bold text-center flex-1">📝 Personal Notes</h1>
 
@@ -125,7 +116,6 @@ export default function Notes() {
         </div>
       </div>
 
-      {/* Search */}
       <div className="mb-6 text-center">
         <input
           type="text"
@@ -136,16 +126,13 @@ export default function Notes() {
         />
       </div>
 
-      {/* Loading / error */}
       {loading && <p className="text-center">Loading notes...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
 
-      {/* Form */}
       {!loading && (
         <NoteForm onAdd={addNote} onUpdate={updateNote} editingNote={editingNote} />
       )}
 
-      {/* List */}
       {!loading && filteredNotes.length > 0 ? (
         <NoteList notes={filteredNotes} onDelete={deleteNote} onEdit={setEditingNote} />
       ) : (
